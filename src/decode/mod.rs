@@ -20,7 +20,7 @@ pub mod errors {
     }
 }
 
-pub fn read_marker<R: Read>(r: &mut R) -> Result<Marker> {
+fn read_marker<R: Read>(r: &mut R) -> Result<Marker> {
     let b = try!(r.read_u8());
     Marker::from_u8(b).ok_or(ErrorKind::BadMarker(b).into())
 }
