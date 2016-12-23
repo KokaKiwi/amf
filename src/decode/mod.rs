@@ -40,6 +40,12 @@ fn read_number<R: Read>(r: &mut R) -> Result<f64> {
 }
 
 fn read_string<R: Read>(r: &mut R, size: usize) -> Result<String> {
+    // Handle special case of empty string, where we don't need to spend time
+    // on "reading" the value, allocating/validating things.
+    if size == 0 {
+        return Ok(String::new());
+    }
+
     let mut buf = Vec::with_capacity(size);
     try!(r.read_exact(&mut buf));
     Ok(try!(String::from_utf8(buf)))
