@@ -1,3 +1,4 @@
+use byteorder::NetworkEndian;
 use byteorder::ReadBytesExt;
 use markers::Marker;
 use std::io::Read;
@@ -6,9 +7,13 @@ use Value;
 use self::errors::*;
 
 pub mod errors {
+    use std::io;
+    use std::string::FromUtf8Error;
+
     error_chain! {
         foreign_links {
-            Io(::std::io::Error);
+            Utf8(FromUtf8Error);
+            Io(io::Error);
         }
 
         errors {
@@ -34,6 +39,12 @@ fn read_number<R: Read>(r: &mut R) -> Result<f64> {
     Ok(try!(r.read_f64::<NetworkEndian>()))
 }
 
+fn read_string<R: Read>(r: &mut R, size: usize) -> Result<String> {
+    let mut buf = Vec::with_capacity(size);
+    try!(r.read_exact(&mut buf));
+    Ok(try!(String::from_utf8(buf)))
+}
+
 pub fn read_value<R: Read>(r: &mut R) -> Result<Value> {
     let value = match try!(read_marker(r)) {
         Marker::Null => Value::Null,
@@ -41,6 +52,14 @@ pub fn read_value<R: Read>(r: &mut R) -> Result<Value> {
         Marker::Unsupported => Value::Unsupported,
         Marker::Number => Value::Number(try!(read_number(r))),
         Marker::Boolean => Value::Boolean(try!(read_bool(r))),
+        Marker::String => {
+            let size = try!(r.read_u16::<NetworkEndian>());
+            Value::String(try!(read_string(r, size as usize)))
+        }
+        Marker::LongString => {
+            let size = try!(r.read_u32::<NetworkEndian>());
+            Value::String(try!(read_string(r, size as usize)))
+        }
         _ => unimplemented!(),
     };
 
