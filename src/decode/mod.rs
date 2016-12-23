@@ -25,11 +25,17 @@ fn read_marker<R: Read>(r: &mut R) -> Result<Marker> {
     Marker::from_u8(b).ok_or(ErrorKind::BadMarker(b).into())
 }
 
+fn read_bool<R: Read>(r: &mut R) -> Result<bool> {
+    let b = try!(r.read_u8());
+    Ok(b != 0)
+}
+
 pub fn read_value<R: Read>(r: &mut R) -> Result<Value> {
     let value = match try!(read_marker(r)) {
         Marker::Null => Value::Null,
         Marker::Undefined => Value::Undefined,
         Marker::Unsupported => Value::Unsupported,
+        Marker::Boolean => Value::Boolean(try!(read_bool(r))),
         _ => unimplemented!(),
     };
 
