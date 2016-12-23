@@ -30,11 +30,16 @@ fn read_bool<R: Read>(r: &mut R) -> Result<bool> {
     Ok(b != 0)
 }
 
+fn read_number<R: Read>(r: &mut R) -> Result<f64> {
+    Ok(try!(r.read_f64::<NetworkEndian>()))
+}
+
 pub fn read_value<R: Read>(r: &mut R) -> Result<Value> {
     let value = match try!(read_marker(r)) {
         Marker::Null => Value::Null,
         Marker::Undefined => Value::Undefined,
         Marker::Unsupported => Value::Unsupported,
+        Marker::Number => Value::Number(try!(read_number(r))),
         Marker::Boolean => Value::Boolean(try!(read_bool(r))),
         _ => unimplemented!(),
     };
