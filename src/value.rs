@@ -1,4 +1,4 @@
-use chrono::{DateTime, UTC};
+use chrono::{DateTime, Utc};
 use std::collections::BTreeMap;
 
 pub enum Value {
@@ -16,7 +16,7 @@ pub enum Value {
     Array(Vec<Value>),
     Object(BTreeMap<String, Value>),
     TypedObject(String, BTreeMap<String, Value>),
-    Date(DateTime<UTC>),
+    Date(DateTime<Utc>),
     XmlDocument(String),
     Reference(u16),
 }

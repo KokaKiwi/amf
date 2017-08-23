@@ -1,6 +1,6 @@
 use byteorder::NetworkEndian;
 use byteorder::ReadBytesExt;
-use chrono::{DateTime, UTC};
+use chrono::{DateTime, Utc};
 use markers::Marker;
 use std::collections::BTreeMap;
 use std::io::Read;
@@ -8,6 +8,7 @@ use Value;
 
 use self::errors::*;
 
+#[allow(unused_doc_comment)]
 pub mod errors {
     use markers::Marker;
     use std::io;
@@ -69,7 +70,7 @@ fn read_object_property<R: Read>(r: &mut R) -> Result<Option<(String, Value)>> {
     }
 }
 
-fn read_date<R: Read>(r: &mut R) -> Result<DateTime<UTC>> {
+fn read_date<R: Read>(r: &mut R) -> Result<DateTime<Utc>> {
     use chrono::NaiveDateTime;
 
     let timestamp = try!(r.read_f64::<NetworkEndian>());
@@ -80,7 +81,7 @@ fn read_date<R: Read>(r: &mut R) -> Result<DateTime<UTC>> {
     let nsecs = (timestamp % 1000.0 * 1000000.0) as u32;
 
     let dt = NaiveDateTime::from_timestamp(secs, nsecs);
-    let dt = DateTime::from_utc(dt, UTC);
+    let dt = DateTime::from_utc(dt, Utc);
 
     Ok(dt)
 }
